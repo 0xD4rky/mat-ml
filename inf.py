@@ -18,4 +18,8 @@ plt.imshow(image, cmap='tab20')  # Using 'tab20' colormap which has 20 distinct 
 plt.colorbar()  # Show color bar to represent classes
 plt.title("Image showing different classes")
 plt.axis('off')  # Hide the axis
-plt.show()
+
+# Save the figure to an image file (e.g., 'class_image.png')
+plt.savefig('class_image.png')
+
+print("Image saved as 'class_image.png'.")
