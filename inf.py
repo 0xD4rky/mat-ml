@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Step 1: Load the data from the .dat file
-data = np.loadtxt('your_file.dat', delimiter=',')  # Adjust the delimiter as needed
+# Step 1: Load the data from the .dat file, adjusting the delimiter for tabs
+data = np.loadtxt(r'/home/darky/Documents/formula1/0.dat', delimiter='\t')
 
 # Step 2: Create an empty array for the image
 image = np.zeros((256, 256), dtype=np.int32)  # To hold the class values
