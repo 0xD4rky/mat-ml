@@ -27,13 +27,13 @@ def align_shadow(car_mask, shadow_mask, car_y):
     return middle_car_y
 
 def place_car_and_shadow(background, car, car_mask, shadow_mask):
-    car_scaled, (car_x, car_y) = scale_and_center_image(car, background, 1.75, vertical_offset=300)  # Increased by 50
+    car_scaled, (car_x, car_y) = scale_and_center_image(car, background, 1.75, vertical_offset=300) 
     car_mask_scaled, _ = scale_and_center_image(car_mask, background, 1.75)
     car_mask_array = np.array(car_mask_scaled)
     binary_car_mask = np.where(car_mask_array > 128, 255, 0).astype(np.uint8)
     car_masked = Image.composite(car_scaled, Image.new("RGBA", car_scaled.size), Image.fromarray(binary_car_mask, 'L'))
 
-    shadow_scaled, (shadow_x, shadow_y) = scale_and_center_image(shadow_mask, background, 1.75, vertical_offset=675)  # Increased by 50
+    shadow_scaled, (shadow_x, shadow_y) = scale_and_center_image(shadow_mask, background, 1.75, vertical_offset=675) 
     shadow_alpha = np.array(shadow_scaled.convert('L'))
     shadow_alpha = np.where(shadow_alpha > 128, 128, 0).astype(np.uint8)
     shadow_rgba = np.stack([shadow_alpha]*3 + [shadow_alpha], axis=-1)
