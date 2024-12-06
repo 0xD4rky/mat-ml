@@ -10,44 +10,54 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 
 from torchvision import datasets,models
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset
 from torch.optim import Adam
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from tqdm import tqdm
 
 
-config = {
-    "device" : torch.device('mps' if torch.backends.mps.is_available() else 'cpu'),
-    "batch_size" : 32,
-    "learning_rate" : 1e-3,
-    "num_epochs" : 25,
-    "input_size" : 224,
-    "data_dir" : "/Users/darky/Documents/mat-ml/dataset"
-}
+def get_data_loaders(data_dir, input_size, batch_size):
+    transform = transforms.Compose([
+        transforms.Resize((input_size, input_size)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-transform = transforms.Compose([
-    transforms.resize((config["input_size"],config["input_size"])),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+    data_augmentation = transforms.Compose([
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(degrees=20),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+        transforms.Resize((input_size, input_size)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-dataset = datasets.ImageFolder(config["data_dir"], transform = transform)
-class_names = datasets.classes
+    dataset = datasets.ImageFolder(data_dir, transform=transform)
+    augmented_dataset = datasets.ImageFolder(data_dir, transform=data_augmentation)
+    combined_dataset = ConcatDataset([dataset, augmented_dataset])
 
-train_size = int(0.7*(len(dataset)))
-val_size = int(0.15*len(dataset))
-test_size = len(dataset) - (train_size+val_size)
-train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
+    train_size = int(0.7 * len(combined_dataset))
+    val_size = int(0.15 * len(combined_dataset))
+    test_size = len(combined_dataset) - train_size - val_size
 
-train_loader = DataLoader(train_set, batch_size = config["batch_size"], shuffle = True)
-val_loader = DataLoader(val_set, batch_size = config["batch_size"], shuffle = False)
-test_loader = DataLoader(test_set, batch_size = config["batch_size"], shuffle = False)
+    train_dataset, val_dataset, test_dataset = random_split(combined_dataset, [train_size, val_size, test_size])
 
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-labels = [dataset.targets[i] for i in range(len(dataset))]
-plt.hist(labels, bins=len(class_names), edgecolor="black")
-plt.title("Class Distribution")
-plt.xlabel("Classes")
-plt.ylabel("Frequency")
-plt.xticks(range(len(class_names)), class_names)
-plt.show()
+    return train_loader, val_loader, test_loader, dataset.class_to_idx
+
+def plot_class_distribution(dataset):
+    labels = []
+    for sub_dataset in dataset.datasets:
+        if hasattr(sub_dataset, "targets"):
+            labels.extend(sub_dataset.targets)
+    labels = [int(label) for label in labels]
+    class_names = list(dataset.datasets[0].class_to_idx.keys())
+    plt.hist(labels, bins=len(class_names), edgecolor="black")
+    plt.title("Class Distribution")
+    plt.xlabel("Classes")
+    plt.ylabel("Frequency")
+    plt.xticks(range(len(class_names)), class_names, rotation=45)
+    plt.show()
