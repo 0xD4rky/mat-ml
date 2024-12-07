@@ -74,3 +74,27 @@ def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbna
         thumbnail_img = image.resize((image_size, image_size))
         processed_images.append(thumbnail_img)
     return processed_images
+
+def load_image(image_file, input_size=448, max_num=12):
+    image = Image.open(image_file).convert('RGB')
+    transform = build_transform(input_size=input_size)
+    images = dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
+    pixel_values = [transform(image) for image in images]
+    pixel_values = torch.stack(pixel_values)
+    return pixel_values
+
+path = 'OpenGVLab/InternVL2_5-1B'
+model = AutoModel.from_pretrained(
+    path,
+    torch_dtype=torch.bfloat16,
+    low_cpu_mem_usage=True,
+    use_flash_attn=True,
+    trust_remote_code=True).eval().cuda()
+tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
+
+pixel_values = load_image('/content/apti.jpg', max_num=12).to(torch.bfloat16).cuda()
+generation_config = dict(max_new_tokens=1024, do_sample=True)
+
+question = '<image>\nPlease describe the image in detail.'
+response, history = model.chat(tokenizer, pixel_values, question, generation_config, history=None, return_history=True)
+print(f'User: {question}\nAssistant: {response}')
