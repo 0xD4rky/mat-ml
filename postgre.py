@@ -45,3 +45,47 @@ gps_features = gps_fixes.groupby('user_id').agg(
 gps_features.columns = ['_'.join(col) for col in gps_features.columns]
 
 
+user_data = loan_outcomes.merge(user_attributes, on='user_id', how='left')
+user_data = user_data.merge(gps_features, on='user_id', how='left')
+
+categorical_cols = user_data.select_dtypes(include=['object']).columns
+encoder = LabelEncoder()
+for col in categorical_cols:
+    user_data[col] = encoder.fit_transform(user_data[col])
+
+user_data['days_since_loan'] = (user_data['application_at'].max() - user_data['application_at']).dt.days
+
+user_data['income_to_age_ratio'] = user_data['cash_incoming_30days'] / (user_data['age'] + 1)
+user_data['gps_fix_density'] = user_data['gps_fix_at_count'] / user_data['days_since_loan']
+
+user_data.replace([np.inf, -np.inf], np.nan, inplace=True)
+user_data.fillna(user_data.select_dtypes(include=['number']).median(), inplace=True)
+
+X = user_data.drop(columns=['user_id', 'application_at', 'loan_outcome'])
+y = user_data['loan_outcome']
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+rf_model = RandomForestClassifier(random_state=42)
+gb_model = GradientBoostingClassifier(random_state=42)
+xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
+log_reg = LogisticRegression(random_state=42)
+
+ensemble_model = VotingClassifier(
+    estimators=[
+        ('rf', rf_model),
+        ('gb', gb_model),
+        ('xgb', xgb_model),
+        ('logreg', log_reg)
+    ],
+    voting='soft'
+)
+
+ensemble_model.fit(X_train, y_train)
+
+y_pred = ensemble_model.predict(X_test)
+y_prob = ensemble_model.predict_proba(X_test)[:, 1]
+
