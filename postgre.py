@@ -89,3 +89,29 @@ ensemble_model.fit(X_train, y_train)
 y_pred = ensemble_model.predict(X_test)
 y_prob = ensemble_model.predict_proba(X_test)[:, 1]
 
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+roc_auc = roc_auc_score(y_test, y_prob)
+print(f"ROC AUC: {roc_auc}")
+
+fpr, tpr, _ = roc_curve(y_test, y_prob)
+plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {roc_auc:.2f})")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve")
+plt.legend()
+plt.show()
+
+feature_importances = pd.DataFrame(
+    {'feature': X.columns, 'importance': np.mean([model.feature_importances_ for name, model in ensemble_model.named_estimators_.items() if hasattr(model, 'feature_importances_')], axis=0)}
+).sort_values(by='importance', ascending=False)
+
+plt.barh(feature_importances['feature'], feature_importances['importance'])
+plt.xlabel("Importance")
+plt.ylabel("Feature")
+plt.title("Feature Importances")
+plt.show()
