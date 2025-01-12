@@ -30,3 +30,15 @@ class SQLAgent:
     def generate_sql(self, user_query: str) -> str:
         schema = self.get_schema()
         prompt = f"""
+        Given the following database schema:
+
+        {schema}
+
+        Convert this natural language query to SQL:
+        {user_query}
+
+        Respond with ONLY the SQL query, nothing else."""
+
+        response = self.model.generate_content(prompt)
+        return response.text.strip()
+
