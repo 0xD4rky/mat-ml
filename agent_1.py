@@ -41,4 +41,23 @@ class SQLAgent:
 
         response = self.model.generate_content(prompt)
         return response.text.strip()
+    
+    def execute_query(self, query: str) -> list:
+        try:
+            self.cursor.execute(query)
+            results = self.cursor.fetchall()
+            column_names = [description[0] for description in self.cursor.description]
+            formatted_results = [dict(zip(column_names, row)) for row in results]
+            return formatted_results
+        except Exception as e:
+            return [{"error": str(e)}]
+            
+    def process_natural_query(self, user_query: str) -> tuple[str, list]:
+        sql_query = self.generate_sql(user_query)
+        results = self.execute_query(sql_query)
+        return sql_query, results
+        
+    def close(self):
+        self.conn.close()
+
 
