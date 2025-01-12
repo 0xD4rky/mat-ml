@@ -10,3 +10,19 @@ class SQLAgent:
         self.model = genai.GenerativeModel('gemini-pro')
         self.conn = sqlite3.connect(database_path)
         self.cursor = self.conn.cursor()
+
+    def get_schema(self) -> str:
+        schema_query = """
+        SELECT name, sql FROM sqlite_master 
+        WHERE type='table';
+        """
+        self.cursor.execute(schema_query)
+        schema = []
+        for table_name, table_sql in self.cursor.fetchall():
+            schema.append(f"Table: {table_name}")
+            cols_query = f"PRAGMA table_info({table_name});"
+            self.cursor.execute(cols_query)
+            columns = self.cursor.fetchall()
+            for col in columns:
+                schema.append(f"- {col[1]} ({col[2]})")
+        return "\n".join(schema)
