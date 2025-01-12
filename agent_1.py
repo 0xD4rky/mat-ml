@@ -26,3 +26,7 @@ class SQLAgent:
             for col in columns:
                 schema.append(f"- {col[1]} ({col[2]})")
         return "\n".join(schema)
+    
+    def generate_sql(self, user_query: str) -> str:
+        schema = self.get_schema()
+        prompt = f"""
