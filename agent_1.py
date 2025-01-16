@@ -60,4 +60,26 @@ class SQLAgent:
     def close(self):
         self.conn.close()
 
+def main():
+    api_key = os.getenv("GEMINI_API_KEY")
+    db_path = "/Users/darky/Documents/mat-ml/test_company.db"
+    
+    agent = SQLAgent(api_key, db_path)
+    
+    while True:
+        user_input = input("\nEnter your query (or 'quit' to exit): ")
+        if user_input.lower() == 'quit':
+            break
+            
+        sql_query, results = agent.process_natural_query(user_input)
+        print("\nGenerated SQL:")
+        print(sql_query)
+        print("\nResults:")
+        for row in results:
+            print(row)
+            
+    agent.close()
+
+if __name__ == "__main__":
+    main()
 

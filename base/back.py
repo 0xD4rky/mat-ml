@@ -45,11 +45,11 @@ def place_car_and_shadow(background, car, car_mask, shadow_mask):
 
     return background
 
-wall_image = Image.open("/Users/darky/Documents/mat-ml/base/assignment/wall.png").convert("RGBA")
-floor_image = Image.open("/Users/darky/Documents/mat-ml/base/assignment/floor.png").convert("RGBA")
-car_image = Image.open("/Users/darky/Documents/mat-ml/base/assignment/images/1.jpeg").convert("RGBA")
-car_mask_image = Image.open("/Users/darky/Documents/mat-ml/base/assignment/car_masks/1.png").convert("L")
-shadow_mask_image = Image.open("/Users/darky/Documents/mat-ml/base/assignment/shadow_masks/1.png").convert("RGBA")
+wall_image = Image.open("/Users/darky/Documents/mat-ml/assignment/wall.png").convert("RGBA")
+floor_image = Image.open("/Users/darky/Documents/mat-ml/assignment/floor.png").convert("RGBA")
+car_image = Image.open("/Users/darky/Documents/mat-ml/assignment/images/1.jpeg").convert("RGBA")
+car_mask_image = Image.open("/Users/darky/Documents/mat-ml/assignment/car_masks/1.png").convert("L")
+shadow_mask_image = Image.open("/Users/darky/Documents/mat-ml/assignment/shadow_masks/1.png").convert("RGBA")
 
 background_image = remove_black_mask_and_join(wall_image, floor_image)
 final_image = place_car_and_shadow(background_image, car_image, car_mask_image, shadow_mask_image)

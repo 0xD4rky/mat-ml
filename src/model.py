@@ -7,7 +7,7 @@ def get_efficientnet_model(num_classes):
     """
     from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
-    weights = EfficientNet_B0_Weights.IMAGENET1K_V1  # or use DEFAULT
+    weights = EfficientNet_B0_Weights.IMAGENET1K_V1  
     model = efficientnet_b0(weights=weights)
     num_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_features, num_classes) 

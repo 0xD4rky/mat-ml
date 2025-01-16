@@ -162,4 +162,5 @@ cython_debug/
 #.idea/
 
 #ignoring datasets
-dataset/
+/assignment
+/base
