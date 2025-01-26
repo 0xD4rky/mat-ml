@@ -1,6 +1,6 @@
 import google.generativeai as genai
 import sqlite3
-from typing import Optional
+from typing import Optional, Dict, Tuple
 import os
 import re
 
@@ -43,7 +43,6 @@ Respond with ONLY the raw SQL query, no markdown formatting, no backticks, no ex
         response = self.model.generate_content(prompt)
         sql = response.text.strip()
         
-        # Clean up the SQL by removing markdown and backticks
         sql = re.sub(r'```.*?\n', '', sql)  # Remove ```sql
         sql = re.sub(r'```', '', sql)       # Remove remaining ```
         sql = sql.strip()
