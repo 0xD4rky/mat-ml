@@ -39,3 +39,32 @@ class DocumentSearchTool(BaseTool):
             min_sentences=1
         )
         return chunker.chunk(raw_text)
+    
+    def _process_document(self):
+        raw_text = self._extract_text()
+        self.chunks = self._create_chunks(raw_text)
+        
+        vectors = []
+        for chunk in self.chunks:
+            vector = self.encoder.encode(chunk.text)
+            vectors.append(vector)
+        
+        vectors = np.array(vectors).astype('float32')
+        self.index.add(vectors)
+
+    def _run(self, query: str) -> str:
+        query_vector = self.encoder.encode(query).reshape(1, -1).astype('float32')
+        k = 3
+        distances, indices = self.index.search(query_vector, k)
+        
+        relevant_chunks = [self.chunks[idx].text for idx in indices[0]]
+        return "\n___\n".join(relevant_chunks)
+
+def test_document_searcher():
+    pdf_path = "/Users/darky/Documents/mat-ml/deepseek_R1.pdf"
+    searcher = DocumentSearchTool(file_path=pdf_path)
+    result = searcher._run("What is the purpose of DSpy?")
+    print("Search Results:", result)
+
+if __name__ == "__main__":
+    test_document_searcher()
