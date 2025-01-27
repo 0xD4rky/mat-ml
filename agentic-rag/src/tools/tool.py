@@ -17,3 +17,25 @@ class DocumentSearchTool(BaseTool):
 
     model_config = ConfigDict(extra="allow")
 
+    def __init__(self, file_path: str):
+        super().__init__()
+        self.file_path = file_path
+        self.encoder = SentenceTransformer("minishlab/potion-base-8M")
+        self.dimension = self.encoder.get_sentence_embedding_dimension()
+        self.index = faiss.IndexFlatL2(self.dimension)
+        self.chunks = []
+        self._process_document()
+
+    def _extract_text(self) -> str:
+        md = MarkItDown()
+        result = md.convert(self.file_path)
+        return result.text_content
+
+    def _create_chunks(self, raw_text: str) -> list:
+        chunker = SemanticChunker(
+            embedding_model="minishlab/potion-base-8M",
+            threshold=0.5,
+            chunk_size=512,
+            min_sentences=1
+        )
+        return chunker.chunk(raw_text)
