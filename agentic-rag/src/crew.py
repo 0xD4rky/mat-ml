@@ -16,7 +16,6 @@ class AgenticRag():
 	agents_config = 'config/agents.yaml'
 	tasks_config = 'config/tasks.yaml'
 
-
 	@agent
 	def retriever_agent(self) -> Agent:
 		return Agent(
@@ -27,3 +26,24 @@ class AgenticRag():
 				web_search_tool
 			]
 		)
+	
+    @agent
+	def response_synthesizer_agent(self) -> Agent:
+		return Agent(
+			config=self.agents_config['response_synthesizer_agent'],
+			verbose=True
+		)
+
+	@task
+	def retrieval_task(self) -> Task:
+		return Task(
+			config=self.tasks_config['retrieval_task'],
+		)
+
+	@task
+	def response_task(self) -> Task:
+		
+		return Task(
+			config=self.tasks_config['response_task'],
+		)
+
