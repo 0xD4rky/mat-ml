@@ -4,7 +4,7 @@ from typing import Type
 from pydantic import BaseModel, Field, ConfigDict
 from markitdown import MarkItDown
 from chonkie import SemanticChunker
-from sentence_transformer import sentence_transformer
+from sentence_transformers import SentenceTransformer
 
 class DocumentSearchToolInput(BaseModel):
     query: str = Field(..., description="Query to search the document.")
@@ -63,7 +63,7 @@ class DocumentSearchTool(BaseTool):
 def test_document_searcher():
     pdf_path = "/Users/darky/Documents/mat-ml/deepseek_R1.pdf"
     searcher = DocumentSearchTool(file_path=pdf_path)
-    result = searcher._run("What is the purpose of DSpy?")
+    result = searcher._run("What is GRPO?")
     print("Search Results:", result)
 
 if __name__ == "__main__":
