@@ -13,8 +13,8 @@ web_search_tool = SerperDevTool()
 class AgenticRag():
 	"""AgenticRag crew"""
 
-	agents_config = 'config/agents.yaml'
-	tasks_config = 'config/tasks.yaml'
+	agents_config = '/Users/darky/Documents/mat-ml/agentic-rag/src/config/agents.yaml'
+	tasks_config = '/Users/darky/Documents/mat-ml/agentic-rag/src/config/task.yaml'
 
 	@agent
 	def retriever_agent(self) -> Agent:
@@ -26,13 +26,14 @@ class AgenticRag():
 				web_search_tool
 			]
 		)
-	
-    @agent
+
+	@agent
 	def response_synthesizer_agent(self) -> Agent:
 		return Agent(
 			config=self.agents_config['response_synthesizer_agent'],
 			verbose=True
 		)
+
 
 	@task
 	def retrieval_task(self) -> Task:
@@ -42,22 +43,18 @@ class AgenticRag():
 
 	@task
 	def response_task(self) -> Task:
-		
 		return Task(
 			config=self.tasks_config['response_task'],
 		)
 
-    @crew
+	@crew
 	def crew(self) -> Crew:
 		"""Creates the AgenticRag crew"""
-		# To learn how to add knowledge sources to your crew, check out the documentation:
-		# https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 
 		return Crew(
-			agents=self.agents, # Automatically created by the @agent decorator
-			tasks=self.tasks, # Automatically created by the @task decorator
+			agents=self.agents, 
+			tasks=self.tasks, 
 			process=Process.sequential,
 			verbose=True,
-			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
 		)
 
