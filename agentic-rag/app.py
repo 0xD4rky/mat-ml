@@ -75,3 +75,18 @@ def create_agents_and_tasks(pdf_tool):
         verbose=True
     )
     return crew
+
+
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []  # Chat history
+
+if "pdf_tool" not in st.session_state:
+    st.session_state.pdf_tool = None  # Store the DocumentSearchTool
+
+if "crew" not in st.session_state:
+    st.session_state.crew = None      # Store the Crew object
+
+def reset_chat():
+    st.session_state.messages = []
+    gc.collect()
