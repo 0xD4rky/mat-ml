@@ -90,3 +90,18 @@ if "crew" not in st.session_state:
 def reset_chat():
     st.session_state.messages = []
     gc.collect()
+
+def display_pdf(file_bytes: bytes, file_name: str):
+    """Displays the uploaded PDF in an iframe."""
+    base64_pdf = base64.b64encode(file_bytes).decode("utf-8")
+    pdf_display = f"""
+    <iframe 
+        src="data:application/pdf;base64,{base64_pdf}" 
+        width="100%" 
+        height="600px" 
+        type="application/pdf"
+    >
+    </iframe>
+    """
+    st.markdown(f"### Preview of {file_name}")
+    st.markdown(pdf_display, unsafe_allow_html=True)
