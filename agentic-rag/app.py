@@ -7,5 +7,5 @@ import time
 
 from crewai import Agent, Crew, Process, Task
 from crewai_tools import SerperDevTool
-from src.agentic_rag.tools.custom_tool import DocumentSearchTool
+from src.tools.tool import DocumentSearchTool
 
