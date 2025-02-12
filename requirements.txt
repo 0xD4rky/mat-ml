@@ -1,0 +1,6 @@
+crewai==0.100.1
+crewai-tools==0.33.0
+markdown-it-py==3.0.0
+markdownify==0.14.1
+markitdown==0.0.1a4
+streamlit==1.42.0
