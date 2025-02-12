@@ -112,7 +112,7 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
 
     if uploaded_file is not None:
-        # If there's a new file and we haven't set pdf_tool yet...
+        
         if st.session_state.pdf_tool is None:
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_file_path = os.path.join(temp_dir, uploaded_file.name)
@@ -124,7 +124,46 @@ with st.sidebar:
             
             st.success("PDF indexed! Ready to chat.")
 
-        # Optionally display the PDF in the sidebar
         display_pdf(uploaded_file.getvalue(), uploaded_file.name)
 
     st.button("Clear Chat", on_click=reset_chat)
+
+### --- MAIN CHAT INTERFACE --- ###
+
+st.markdown("""
+    # Agentic RAG powered by <img src="data:image/png;base64,{}" width="120" style="vertical-align: -3px;">
+""".format(base64.b64encode(open("assets/crewai.png", "rb").read()).decode()), unsafe_allow_html=True)
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+prompt = st.chat_input("Ask a question about your PDF...")
+
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    if st.session_state.crew is None:
+        st.session_state.crew = create_agents_and_tasks(st.session_state.pdf_tool)
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
+        with st.spinner("Thinking..."):
+            inputs = {"query": prompt}
+            result = st.session_state.crew.kickoff(inputs=inputs).raw
+        
+        lines = result.split('\n')
+        for i, line in enumerate(lines):
+            full_response += line
+            if i < len(lines) - 1:  
+                full_response += '\n'
+            message_placeholder.markdown(full_response + "▌")
+            time.sleep(0.15)  
+        
+        message_placeholder.markdown(full_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": result})
