@@ -221,7 +221,8 @@ finally:
                 return bytes(output_match.group(1), "utf-8").decode("unicode_escape")
             return ""
         
-        def code_output(self, row, execution_output):
+    def code_output(self, row, execution_output):
+
         row["execution_stdout"] = execution_output.stdout
         row["execution_stderr"] = execution_output.stderr
         
