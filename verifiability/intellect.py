@@ -181,3 +181,42 @@ finally:
     except Exception:
         pass
 '''
+        
+        return wrapper_code
+
+    def code_input(self, row):
+        """Legacy method for compatibility"""
+        verification_info = row.get("verification_info", "")
+        if not verification_info:
+            return ""
+        try:
+            verification_dict = ast.literal_eval(verification_info)
+            test_cases = verification_dict.get("test_cases", [])
+            for test_case in test_cases:
+                if test_case.get("type") == "stdin_stdout":
+                    test_input = test_case.get("input", "")
+                    return bytes(test_input, "utf-8").decode("unicode_escape")
+            return ""
+        except Exception:
+            input_match = re.search(r"'input'\s*:\s*'((?:\\.|[^\\'])*)'", verification_info, re.DOTALL)
+            if input_match:
+                return bytes(input_match.group(1), "utf-8").decode("unicode_escape")
+            return ""
+
+    def _get_expected_output(self, row):
+        """Legacy method for compatibility"""
+        verification_info = row.get("verification_info", "")
+        if not verification_info:
+            return ""
+        try:
+            verification_dict = ast.literal_eval(verification_info)
+            test_cases = verification_dict.get("test_cases", [])
+            for test_case in test_cases:
+                if test_case.get("type") == "stdin_stdout":
+                    return bytes(test_case.get("output", ""), "utf-8").decode("unicode_escape")
+            return ""
+        except Exception:
+            output_match = re.search(r"'output'\s*:\s*'((?:\\.|[^\\'])*)'", verification_info, re.DOTALL)
+            if output_match:
+                return bytes(output_match.group(1), "utf-8").decode("unicode_escape")
+            return ""
