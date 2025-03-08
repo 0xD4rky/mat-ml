@@ -315,3 +315,87 @@ if __name__ == "__main__":
         print("\nExpected output for first problem:")
         expected_output = executor._get_expected_output(selected_data[0])
         print(repr(expected_output))
+
+    try:
+        start_time = time.time()
+        execution_output = executor(selected_data)
+        end_time = time.time()
+        
+        execution_time = end_time - start_time
+        
+        correct_count = sum(1 for x in execution_output['correct'] if x)
+        print(f"\nSummary: {correct_count}/{num_samples} solutions passed verification")
+        print(f"Success rate: {correct_count/num_samples*100:.2f}%")
+        print(f"Average execution time: {execution_time/num_samples:.4f} seconds per problem")
+        
+        for i in range(num_samples):
+            print(f"\n--- Problem {i+1}: {selected_data[i].get('problem_id', f'Unknown-{i}')} ---")
+            
+            is_correct = False
+            if 'correct' in execution_output:
+                try:
+                    is_correct = bool(execution_output['correct'][i])
+                except (IndexError, TypeError):
+                    pass
+            
+            print(f"Correct: {is_correct}")
+            
+            if 'test_results' in execution_output:
+                try:
+                    test_results = execution_output['test_results'][i]
+                    if isinstance(test_results, dict):
+                        passed = test_results.get('passed', 0)
+                        total = test_results.get('total', 0)
+                        print(f"Tests passed: {passed}/{total}")
+                except (IndexError, TypeError, AttributeError):
+                    print("Could not access test results")
+            
+            if not is_correct:
+                print("\nRaw outputs:")
+                
+                print("Expected:")
+                try:
+                    if 'expected_output' in execution_output:
+                        expected = execution_output['expected_output'][i]
+                        print(repr(expected if expected is not None else ""))
+                    else:
+                        print("No expected output available")
+                except (IndexError, TypeError):
+                    print("Could not access expected output")
+                
+                print("Actual:")
+                try:
+                    actual = execution_output['execution_stdout'][i]
+                    print(repr(actual if actual is not None else ""))
+                except (IndexError, TypeError):
+                    print("Could not access actual output")
+                
+                try:
+                    if ('normalized_expected' in execution_output and 
+                        'normalized_actual' in execution_output):
+                        print("\nNormalized comparison:")
+                        print("Expected (normalized):")
+                        print(repr(execution_output['normalized_expected'][i]))
+                        print("Actual (normalized):")
+                        print(repr(execution_output['normalized_actual'][i]))
+                except (IndexError, TypeError):
+                    pass
+                
+                try:
+                    if 'execution_stderr' in execution_output and execution_output['execution_stderr'][i]:
+                        print("\nError info:")
+                        print(execution_output['execution_stderr'][i])
+                except (IndexError, TypeError):
+                    pass
+                
+                try:
+                    if 'error' in execution_output:
+                        print("Error:")
+                        print(execution_output['error'][i])
+                except (IndexError, TypeError):
+                    pass
+    
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        import traceback
+        traceback.print_exc()
