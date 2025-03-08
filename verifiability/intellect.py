@@ -19,6 +19,5 @@ def extract_code(solution):
     elif solution.startswith("```python"):
         solution = solution[len("```python"):].lstrip()
         if solution.endswith("```"):
-            # Remove the closing fence
             solution = solution[:-3].rstrip()
     return solution
