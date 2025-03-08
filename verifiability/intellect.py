@@ -287,3 +287,31 @@ finally:
             row["expected_output"] = self._get_expected_output(row)
         except Exception:
             pass
+
+        return row
+
+if __name__ == "__main__":
+    executor = PrimeIntellectExecutor()
+    dataset = load_dataset("PrimeIntellect/verifiable-coding-problems", split="train")
+    
+    num_samples = min(5, len(dataset))
+    selected_data = dataset.select(range(num_samples))
+    
+    print(f"Testing {num_samples} samples from PrimeIntellect/verifiable-coding-problems")
+    
+    print("\nDEBUG INFO FOR FIRST PROBLEM:")
+    print("Solution code:")
+    first_solution = selected_data[0].get("gold_standard_solution", "")
+    print(extract_code(first_solution)[:200] + "..." if len(extract_code(first_solution)) > 200 else extract_code(first_solution))
+    
+    print("\nVerification info:")
+    verification_info = selected_data[0].get("verification_info", "")
+    print(verification_info[:200] + "..." if len(verification_info) > 200 else verification_info)
+    
+    if 'verification_info' in selected_data[0]:
+        print("\nActual input for first problem:")
+        input_text = executor.code_input(selected_data[0])
+        print(repr(input_text))
+        print("\nExpected output for first problem:")
+        expected_output = executor._get_expected_output(selected_data[0])
+        print(repr(expected_output))
