@@ -20,4 +20,5 @@ def extract_code(solution):
         solution = solution[len("```python"):].lstrip()
         if solution.endswith("```"):
             solution = solution[:-3].rstrip()
+            
     return solution
