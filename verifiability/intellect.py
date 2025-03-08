@@ -220,3 +220,37 @@ finally:
             if output_match:
                 return bytes(output_match.group(1), "utf-8").decode("unicode_escape")
             return ""
+        
+        def code_output(self, row, execution_output):
+        row["execution_stdout"] = execution_output.stdout
+        row["execution_stderr"] = execution_output.stderr
+        
+        try:
+            if execution_output.stdout is None:
+                row["correct"] = False
+                row["error"] = "No output received from execution"
+                return row
+                
+            test_results = json.loads(execution_output.stdout)
+            
+            if "success_rate" in test_results:
+                row["correct"] = test_results["success_rate"] >= 1.0
+                row["test_results"] = test_results
+                
+                for result in test_results.get("results", []):
+                    if not result.get("passed"):
+                        if "normalized_expected" not in row:
+                            row["normalized_expected"] = result.get("normalized_expected", "")
+                            row["normalized_actual"] = result.get("normalized_actual", "")
+                        if "expected_output" not in row:
+                            row["expected_output"] = result.get("expected", "")
+            elif "error" in test_results:
+                row["correct"] = False
+                row["error"] = test_results["error"]
+            else:
+                row["correct"] = False
+                
+            return row
+        except json.JSONDecodeError:
+            # Keep existing fallback logic
+            pass
