@@ -254,3 +254,36 @@ finally:
         except json.JSONDecodeError:
             # Keep existing fallback logic
             pass
+
+
+        stderr = execution_output.stderr or ""
+        if "== ALL TESTS PASSED ==" in stderr:
+            row["correct"] = True
+        else:
+            try:
+                actual_output = execution_output.stdout
+                expected_output = self._get_expected_output(row)
+                
+                actual_lines = [line.rstrip() for line in actual_output.strip().split('\n')]
+                expected_lines = [line.rstrip() for line in expected_output.strip().split('\n')]
+                
+                while actual_lines and not actual_lines[-1]:
+                    actual_lines.pop()
+                while expected_lines and not expected_lines[-1]:
+                    expected_lines.pop()
+                    
+                normalized_actual = '\n'.join(actual_lines)
+                normalized_expected = '\n'.join(expected_lines)
+                
+                row["correct"] = normalized_actual == normalized_expected
+                if not row["correct"]:
+                    row["normalized_actual"] = normalized_actual
+                    row["normalized_expected"] = normalized_expected
+            except Exception as e:
+                row["correct"] = False
+                row["normalization_error"] = str(e)
+                
+        try:
+            row["expected_output"] = self._get_expected_output(row)
+        except Exception:
+            pass
