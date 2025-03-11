@@ -51,3 +51,22 @@ def aggregate_paths_based_on_scores(paths: List[Tuple[str, float]]) -> Tuple[str
         answer_scores[answer] = answer_scores.get(answer, 0) + delta
     best_answer = max(answer_scores, key=answer_scores.get)
     return best_answer, answer_scores[best_answer]
+
+def cot_decode(
+    model: AutoModel,
+    tokenizer: AutoModel,
+    messages: List[Dict[str, str]],
+    k: int = 10,
+    num_beams: int = 1,
+    max_new_tokens: int = 512,
+    temperature: float = 1.0,
+    top_p: float = 1.0,
+    repetition_penalty: float = 1.0,
+    length_penalty: float = 1.0,
+    no_repeat_ngram_size: int = 0,
+    early_stopping: bool = False,
+    aggregate_paths: bool = False,
+) -> Tuple[str, float]:
+    
+    
+
