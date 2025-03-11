@@ -130,6 +130,37 @@ def cot_decode(
             output_scores=True,
             return_dict_in_generate=True,
         )
+    
+        generated_sequence = output.sequences[0]
+        answer_ids = generated_sequence[len(input_ids[0]):]
+        answer_text = tokenizer.decode(answer_ids, skip_special_tokens=True)
         
+        confidence = confidence(output.scores, answer_ids)
+        paths.append((answer_text, confidence))
+    
+    if aggregate_paths:
+        return aggregate_paths_based_on_scores(paths)
+    else:
+        return max(paths, key=lambda x: x[1])
+    
+
+def main():
+
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    model_name = "Qwen/Qwen2.5-0.5B-Instruct"
+    model = AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="eager")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    messages = [
+        {"role": "user", "content": "In a dance class of 20 students, 20% enrolled in contemporary dance, 25% of the remaining enrolled in jazz dance, and the rest enrolled in hip-hop dance. What percentage of the entire students enrolled in hip-hop dance?"}
+    ]
+
+    print(f"Using device: {get_device()}")
+    result, confidence = cot_decode(model, tokenizer, messages, aggregate_paths=True, max_new_tokens=512)
+    print(f"CoT Decoding:\n {result}")
+
+if __name__ == "__main__":
+    main()
 
 
