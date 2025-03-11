@@ -68,5 +68,34 @@ def cot_decode(
     aggregate_paths: bool = False,
 ) -> Tuple[str, float]:
     
+    """
+    Implement CoT-decoding for a given chat input.
     
+    Args:
+        model: The Hugging Face transformer model.
+        tokenizer: The associated tokenizer.
+        messages: List of chat messages in the format [{"role": "user", "content": "..."}]
+        k: The number of alternative tokens to consider at the first step.
+        num_beams: Number of beams for beam search.
+        max_new_tokens: Maximum number of new tokens to generate.
+        temperature: Sampling temperature.
+        top_p: Nucleus sampling probability.
+        repetition_penalty: Repetition penalty factor.
+        length_penalty: Length penalty factor.
+        no_repeat_ngram_size: Size of n-grams to avoid repeating.
+        early_stopping: Whether to stop generation when all beams are finished.
+        aggregate_paths: Whether to aggregate multiple paths.
+
+    Returns:
+        A tuple containing the best path (or aggregated result) and its confidence score.
+    """
+
+    device = get_device()
+    model.to(device)
+
+    if tokenizer.chat_template:
+        input_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    else:
+        input_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+        input_text += "\nassistant:"
 
