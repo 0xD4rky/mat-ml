@@ -99,3 +99,37 @@ def cot_decode(
         input_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
         input_text += "\nassistant:"
 
+    input_ids = tokenizer.encode(input_text, return_tensors = "pt").to(device)
+    attention_mask = torch.ones_like(input_ids).to(device)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    with torch.no_grad():
+        outputs = model(input_ids, attention_mask=attention_mask)
+        first_token_logits = outputs.logits[0, -1, :]
+        top_k_logits, top_k_indices = torch.topk(first_token_logits, k)
+    
+    paths = []
+    for idx in top_k_indices:
+        start_ids = torch.cat([input_ids, idx.unsqueeze(0).unsqueeze(0)], dim = -1)
+        start_mask = torch.cat([attention_mask, torch.ones((1, 1), dtype=torch.long, device=device)], dim=-1)
+
+        output = model.generate(
+            start_ids,
+            attention_mask=start_mask,
+            max_new_tokens=max_new_tokens,
+            num_beams=num_beams,
+            temperature=temperature,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
+            length_penalty=length_penalty,
+            no_repeat_ngram_size=no_repeat_ngram_size,
+            early_stopping=early_stopping,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            output_scores=True,
+            return_dict_in_generate=True,
+        )
+        
+
+
