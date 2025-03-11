@@ -43,3 +43,11 @@ def confidence(logits: List[torch.Tensor], answer_ids: torch.Tensor) -> float:
         valid_tokens += 1
     
     return confidence_sum / valid_tokens if valid_tokens > 0 else 0.0
+
+def aggregate_paths_based_on_scores(paths: List[Tuple[str, float]]) -> Tuple[str, float]:
+    """Aggregate multiple paths based on their confidence scores."""
+    answer_scores = {}
+    for answer, delta in paths:
+        answer_scores[answer] = answer_scores.get(answer, 0) + delta
+    best_answer = max(answer_scores, key=answer_scores.get)
+    return best_answer, answer_scores[best_answer]
