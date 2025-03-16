@@ -1,6 +1,6 @@
 import torch
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model
 
@@ -44,4 +44,45 @@ def preprocess_function(example):
 tokenized_dataset = dataset.map(preprocess_function, batched = False, remove_columns = dataset["train"].column_names)
 
 train_dataset = tokenized_dataset["train"]
-eval_dataset = tokenized_dataset["eval"]
+eval_dataset = tokenized_dataset["test"]
+
+
+lora_config = LoraConfig(
+    r=16,              # Rank of the low-rank matrices
+    lora_alpha=32,     # Scaling factor
+    target_modules=["q_proj", "v_proj"],  # Target attention layers
+    lora_dropout=0.05, # Dropout for regularization
+    bias="none",       # No bias adaptation
+    task_type="CAUSAL_LM"  
+)
+
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+
+
+training_args = TrainingArguments(
+    output_dir="./qwen2.5-gsm8k-lora",
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+    gradient_accumulation_steps=4,  # Simulate larger batch size
+    num_train_epochs=3,
+    learning_rate=2e-4,
+    fp16=True,  # Mixed precision training
+    logging_steps=10,
+    save_steps=500,
+    evaluation_strategy="steps",
+    eval_steps=500,
+    warmup_steps=100,
+    remove_unused_columns=False,
+    report_to="wandb"  # Disable wandb or other logging
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset,
+    tokenizer=tokenizer
+)
+
+trainer.train()

@@ -12,7 +12,7 @@ def get_device():
     else:
         return torch.device("cpu")
     
-def confidence(logits: List[torch.Tensor], answer_ids: torch.Tensor) -> float:
+def cal_confidence(logits: List[torch.Tensor], answer_ids: torch.Tensor) -> float:
 
     """
     Calculate the confidence score (Δ) as specified in the paper.
@@ -135,7 +135,7 @@ def cot_decode(
         answer_ids = generated_sequence[len(input_ids[0]):]
         answer_text = tokenizer.decode(answer_ids, skip_special_tokens=True)
         
-        confidence = confidence(output.scores, answer_ids)
+        confidence = cal_confidence(output.scores, answer_ids)
         paths.append((answer_text, confidence))
     
     if aggregate_paths:
